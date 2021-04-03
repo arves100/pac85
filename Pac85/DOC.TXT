@@ -18,6 +18,8 @@ Pac85 documentation
 - Always use _In_ and _Out_ annoations.
 - Prefer using Windows uppercase types (VOID, INT, DWORD)
 - Use UNREFERENCED_PARAMETER(x) when you don't use a parameter in a function
+- Program it in C89 including the comments
+- ALWAYS USE UNICODE FUNCTIONS, DO NOT USE TCHAR
 
 ... Code Style ...
 Microsoft codestyle.
