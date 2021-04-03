@@ -29,7 +29,7 @@ static INT_PTR WINAPI WLCDMain(HWND hWindow, UINT nMsg, WPARAM wParam, LPARAM lP
 		switch (wParam)
 		{
 		case IDOK:
-			SendMessage(GetParent(hWindow), WM_SWITCH_DIALOG, (WPARAM)WINDOWID_DetectMirror, 0);
+			SendMessageW(GetParent(hWindow), WM_SWITCH_DIALOG, (WPARAM)WINDOWID_DetectMirror, 0);
 			break;
 		case IDCANCEL:
 			SendMessageW(GetParent(hWindow), WM_CLOSE, 0, 0);
