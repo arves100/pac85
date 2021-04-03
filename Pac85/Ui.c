@@ -2,10 +2,24 @@
 #include "Ui.h"
 #include "Utils.h"
 
+/*!
+ * Callback of Ui creation
+ */
 typedef HRESULT(CALLBACK* CbUiCreate)(_In_ struct SUi*, _Out_ struct SBasicComponent**);
+
+/*!
+ * Callback of Ui deletion
+ */
 typedef HRESULT(CALLBACK* CbUiDelete)(_In_ struct SUi*, _In_ struct SBasicComponent*);
 
+/*!
+ * Defines the callbacks of a new Ui
+ */
 #define DEFINE_UI(name) extern HRESULT CALLBACK Ui_Create##name(_In_ struct SUi*, _Out_ struct SBasicComponent**); extern HRESULT CALLBACK Ui_Delete##name(_In_ struct SUi*, _In_ struct SBasicComponent*)
+
+/*!
+ * Adds a new Ui inside the memory manager
+ */
 #define ADD_UI(name) { WINDOWID_##name, Ui_Create##name, Ui_Delete##name }
 
 DEFINE_UI(Main);

@@ -1,6 +1,9 @@
 ﻿#ifndef PAC85_UI_H
 #define PAC85_UI_H
 
+/*!
+ * IDs of the window used inside the program.
+ */
 enum EWindowID
 {
 	WINDOWID_Invalid,
@@ -20,7 +23,7 @@ struct SBasicComponent
 };
 
 /*!
- * Contains all the elements of the Ui
+ * Contains all the elements of the Ui.
  */
 struct SUi
 {
