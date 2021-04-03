@@ -1,0 +1,212 @@
+Pac85 documentation
+----------------------
+
+... Rules ...
+- Prefer hungarian annotation.
+- Prefer using specific WinApi function rather than C ones.
+- Do not add third party modules unless it's required, such modules MUST
+  be built in static, we don't want extra DLL in the program.
+- Use async functionality, better if they are handled with window messages.
+- Do not download external programs unless it's required to, such programs
+  must be saved inside a temporany location and removed when the app exits.
+- Do not use C++, this app has to be coded in plain C.
+- Prefer to not use COM.
+- Do not use global/static variables unless they are constant.
+- Always check for return types.
+- Always show messages for any error.
+- Always check for memory/handle/resource leaks.
+- Always use _In_ and _Out_ annoations.
+- Prefer using Windows uppercase types (VOID, INT, DWORD)
+- Use UNREFERENCED_PARAMETER(x) when you don't use a parameter in a function
+
+... Code Style ...
+Microsoft codestyle.
+
+"if (x)
+{"
+
+"if (x) y();" (One line only)
+
+USE TAB NOT 4/2 SPACES.
+
+Name conventions:
+ lowercase letter at the beginning: variables
+ uppercase letter at the beginning: functions
+ full uppercase in macros and enumerators (with the excetion of EWindowID because we can't do a full uppercase in the preprocessor)
+
+Function prefix:
+ UtlXXX -> utility functions (Utils.h)
+ NetXXX -> networking functions (Net.h)
+ UiXXX -> UI functions (Ui.h)
+ FsXXX -> File System/File IO functions (File.h)
+
+Notations:
+ dw -> dword (unsigned long int/unsigned int)
+ b -> byte or boolean (1 byte if unsigned char, 4 bytes if BOOL)
+ n -> number (generic, like size_t or int)
+ qw -> qword (unsigned long long int)
+ c -> char
+ s -> struct
+ lp/p -> pointer
+ a -> array
+ h -> handle
+ w/l -> only used for wparam and lparam
+ sz -> string (LPCWCHAR/LPCCHAR with null terminator)
+ v -> void (only used in LPVOID)
+ g_/s_ -> global/static
+
+... Ui Component ...
+The Ui component works by defining a basic Ui structure that will hold
+all the data of the window/dialog element.
+
+struct SBasicComponent
+{
+	UINT nId;
+	HWND hWnd;
+};
+
+This is the basic component that must be "inherated" by all Ui components.
+
+hWnd -> this will contain the handle to the dialog window
+nId -> this will contain the Ui ID, you view the IDs inside Ui.h
+
+An Ui will contain two callbacks, the Create and Delete callbacks, that will
+be called by the Ui compoent for creating/deleting that particular Ui specified
+with that Ui.
+
+extern HRESULT CALLBACK Ui_Create##name(_In_ struct SUi*, _Out_ struct SBasicComponent**); 
+extern HRESULT CALLBACK Ui_Delete##name(_In_ struct SUi*, _In_ struct SBasicComponent*)
+
+the SBasicComponent will be the pointer of the specified component that we will create in
+the Ui_Create callback.
+
+For creating a new Ui, you need first to make it's ID inside Ui.h, then
+you need to modify Ui.c.
+
+DEFINE_UI declares the callbacks for letting Ui.c access the Ui functions, then
+ADD_UI must be called inside g_asMngr, g_asMngr is a global variable that specifies all
+the Ui that the application can use, make sure to modify g_nMngrSize as well.
+
+Do not add any component callbacks inside Ui, rather make a new file called "Ui_##name.c"
+
+Do NOT create any extra WINDOWID_Main, there MUST BE only ONE WINDOWID_Main, you can usually access
+the WINDOWID_Main by using GetParent() inside a dialog.
+
+... Creating a new UI (Sample code) ...
+1. Create a new dialog inside Pac85.rc (use any rc editor)
+2. Design the UI (Make custom IDs for the parts that you care to modify with WinAPI)
+3. Create a new file called "Ui_##name" and follow the modifications in Ui.c described in the component
+4. Sample code to create a sample dialog:
+
+struct S##nameDlg
+{
+	struct SBaseComponent sBase; /* required */
+}
+
+static INT_PTR WINAPI ##nameDlgProc(HWND hWindow, UINT nMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (nMsg)
+	{
+	case WM_INITDIALOG: /* create/set dialog child object */
+	{
+		return TRUE;
+	}
+	case WM_DESTROY: /* destroy dialog child objects */
+	{
+		break;
+	}
+	case WM_CLOSE:
+		SendMessageW(GetParent(hWindow), WM_CLOSE, 0, 0);
+		break;
+
+	default:
+		break;
+	}
+
+	return FALSE;
+}
+
+HRESULT CALLBACK Ui_Delete##name(_In_ struct SUi* psUi, _In_ struct SBasicComponent* lpsComp)
+{
+	struct S##nameDlg* lpsDlg = (struct S##nameDlg*)lpsComp;
+
+	UNREFERENCED_PARAMETER(psUi);
+
+	if (lpsDlg->sBase.hWnd)
+	{
+		DestroyWindow(lpsDlg->sBase.hWnd);
+		lpsDlg->sBase.hWnd = NULL;
+	}
+
+	return S_OK;
+}
+
+HRESULT CALLBACK Ui_Create##name(_In_ struct SUi* psUi, _Out_ struct SBasicComponent** lpsOut)
+{
+	struct S##nameDlg* lpsHandle = NULL;
+	INT nWidth = GetSystemMetrics(SM_CXFULLSCREEN), nHeight = GetSystemMetrics(SM_CYFULLSCREEN);
+	RECT sRct;
+	
+	if (FAILED(UtlMalloc(sizeof(struct S##nameDlg), (LPVOID*)&lpsHandle)))
+		return E_OUTOFMEMORY;
+
+	lpsHandle->sBase.nId = WINDOWID_Welcome;
+
+	lpsHandle->sBase.hWnd = CreateDialogParamW(psUi->hInstance, MAKEINTRESOURCEW(IDD_##name), psUi->psBackgroundWin->hWnd, (DLGPROC)##nameDlgProc, (LPARAM)lpsHandle);
+
+	if (!lpsHandle->sBase.hWnd)
+	{
+		Ui_Delete##name(psUi, (struct SBasicComponent*)lpsHandle);
+		UtlFree(lpsHandle);
+		return E_FAIL;
+	}
+
+	GetWindowRect(lpsHandle->sBase.hWnd, &sRct);
+	SetWindowPos(lpsHandle->sBase.hWnd, NULL, (nWidth / 2) - ((sRct.right - sRct.left) / 2), (nHeight / 2) - ((sRct.bottom - sRct.top) / 2), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	
+	*lpsOut = (struct SBasicComponent*)lpsHandle;
+
+	return S_OK;
+}
+
+Code explanation:
+INT nWidth = GetSystemMetrics(SM_CXFULLSCREEN), nHeight = GetSystemMetrics(SM_CYFULLSCREEN);
+This two syscalls gets the size of the default monitor (CX -> Width, CY -> Height)
+we will use this for placing our dialog in the center of the screen.
+
+UtlMalloc -> utility function to allocate memory ("malloc" with winapi), free with UtlFree
+
+*lpsOut = (struct SBasicComponent*)lpsHandle; -> always set the reference of lpsOut
+
+REMEMBER THAT FOR DIALOG "WM_INITDIALOG" MUST BE HANDLED AND IT MUST RETURN TRUE IF 
+THE INITIALIZATION SUCCEEDED OR FALSE.
+
+SendMessageW(GetParent(hWindow), WM_CLOSE, 0, 0); -> We use the parent window to handle switching
+ to new dialogs and shutdown of the program, so we will send a WM_CLOSE to the parent when we want
+ to close the application, the main window will be responsable for destroying the window handles
+ as well, so we don't need to send any DestroyWindow or WM_DESTROY
+
+... Performing network operations ...
+Start the network operations with NetStart, make sure to free the structure with NetFree.
+
+You will need to specify a context that will be used inside the async network callbacks.
+
+struct SNetCtx
+{
+	HWND hWindow;
+};
+
+hWindow -> The window where the network messages will be sent, see the custom messages for more information.
+ All network messages starts with "WMNET_"
+
+... Custom messages documentation ...
+Message Name			| Description																	| Return			| WPARAM																								| LPARAM							| Remarks
+WM_SWITCH_DIALOG		| This is used to allow switching between one dialog and another				| Unused			| ID of the window (See EWindowID)																		| Unused							| Usually only handled by the main window (WINDOWID_Main)
+WMNET_DISCONNECTED		| Used when you are disconnected/get disconnected in a network operation		| Unused			| Unused																								| Unused							| Sent from Net.c callback
+WMNET_CONNECTED			| Used when you are successfully connected to a server							| Unused			| A pointer to an LPWSTR that indicates the IP address of the server in dotted notation					| Size of the WPARAM parameter		| Sent from Net.c callback
+WMNET_CANREAD			| Used when you can read data from the network									| Unused			| Points to a DWORD that contains the number of bytes of data available									| Unused							| Sent from Net.c callback, use WinHttpReadData to retrive the data
+WMNET_CANREADHEADERS	| When this message is received, you can read the response headers				| Unused			| Unused																								| Unused							| Sent from Net.c callback, you can read the headers by using WinHttpQueryHeaders
+WMNET_READED			| Data has successfully readed from the server									| Unused			| Pointer to the buffer that contains the network data (the developer must free this data it received)	| The length of the data readed		| Sent from Net.c callback, which gets called once WinHttpReadData succedded
+WMNET_ERROR				| An error oncurred during the network request									| Unused			| A pointer to the WINHTTP_ASYNC_RESULT structure														| Unused							| Sent from Net.c callback
+WMNET_SSLERROR			| An error oncurred during SSL negotiation										| Unused			| A DWORD flag that contains the error during the SSL transaction										| Unused							| Sent from Net.c callback, see https://docs.microsoft.com/en-us/windows/win32/api/winhttp/nc-winhttp-winhttp_status_callback "WINHTTP_CALLBACK_STATUS_SECURE_FAILURE" for more information about the SSL flags
+WMNET_WRITTEN			| When this message is received, some data has successfully sent to the server	| Unused			| A pointer to a DWORD that indicates the number of bytes written										| Unused							| Sent from Net.c callback
