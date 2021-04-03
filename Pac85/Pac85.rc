@@ -196,7 +196,7 @@ LANGUAGE LANG_ITALIAN, SUBLANG_ITALIAN
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_PAC                 ICON                    "Pac85.ico"
+IDI_PAC                 ICON                    "res\\Pac85.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -204,9 +204,9 @@ IDI_PAC                 ICON                    "Pac85.ico"
 // Bitmap
 //
 
-IDB_BACKGROUND          BITMAP                  "Pac85.bmp"
+IDB_BACKGROUND          BITMAP                  "res\\Pac85.bmp"
 
-IDB_WAIFU               BITMAP                  "Waifu.bmp"
+IDB_WAIFU               BITMAP                  "res\\Waifu.bmp"
 
 #endif    // Italiano (Italia) resources
 /////////////////////////////////////////////////////////////////////////////
