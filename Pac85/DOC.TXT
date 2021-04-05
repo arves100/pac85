@@ -21,6 +21,12 @@ Pac85 documentation
 - Program it in C89 including the comments
 - ALWAYS USE UNICODE FUNCTIONS, DO NOT USE TCHAR
 
+... Commit style ...
+Like ReactOS
+
+[MODULE] Description
+- Extra description
+
 ... Code Style ...
 Microsoft codestyle.
 
