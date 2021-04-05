@@ -4,13 +4,19 @@
 
 /*!
  * Callback of Ui creation
+ * @param psUi a pointer to the ui structure
+ * @param psOut a pointer where the component structure will be held
+ * @return S_OK for no error
  */
-typedef HRESULT(CALLBACK* CbUiCreate)(_In_ struct SUi*, _Out_ struct SBasicComponent**);
+typedef HRESULT(CALLBACK* CbUiCreate)(_In_ struct SUi* psUi, _Out_ struct SBasicComponent** psOut);
 
 /*!
  * Callback of Ui deletion
+ * @param psUi a pointer to the ui structure
+ * @param psComp a pointer to the corresponding component structure
+ * @return S_OK for no error
  */
-typedef HRESULT(CALLBACK* CbUiDelete)(_In_ struct SUi*, _In_ struct SBasicComponent*);
+typedef HRESULT(CALLBACK* CbUiDelete)(_In_ struct SUi* psUi, _In_ struct SBasicComponent* psComp);
 
 /*!
  * Defines the callbacks of a new Ui
@@ -22,31 +28,45 @@ typedef HRESULT(CALLBACK* CbUiDelete)(_In_ struct SUi*, _In_ struct SBasicCompon
  */
 #define ADD_UI(name) { WINDOWID_##name, Ui_Create##name, Ui_Delete##name }
 
+/* UI definitions */
+
 DEFINE_UI(Main);
 DEFINE_UI(Welcome);
 DEFINE_UI(DetectMirror);
 
-struct SUiComponentMemoryManager
+/*!
+ * This structure contains the callbacks of a specific ui component that will
+ * get called during creation or destruction of the component
+ */
+struct SUiComponentCallbacks
 {
-	UINT nId;
-	CbUiCreate Create;
-	CbUiDelete Delete;
+	UINT nId; /*! id of the component */
+	CbUiCreate Create; /*! creation callback */
+	CbUiDelete Delete; /*! deletion callback */
 };
 
-static const UINT g_nMngrSize = 3;
-static const struct SUiComponentMemoryManager g_asMngr[] =
+/*!
+ * An array that contains all the component callbacks
+ */
+static const struct SUiComponentCallbacks g_asMngr[] =
 {
 	ADD_UI(Main),
 	ADD_UI(Welcome),
 	ADD_UI(DetectMirror),
 };
 
+/*!
+ * This function is internally used to free a component
+ * @param psUi ui structure
+ * @param psComp component structure that will be freed
+ * @return S_OK for no error
+ */
 static HRESULT UiFreeComponent(_In_ struct SUi* psUi, struct SBasicComponent* psComp)
 {
 	UINT i = 0;
 	HRESULT hr = S_OK;
 	
-	for (; i < g_nMngrSize; i++)
+	for (; i < ARRAYSIZE(g_asMngr); i++)
 	{
 		if (g_asMngr[i].nId == psComp->nId)
 		{
@@ -62,12 +82,19 @@ static HRESULT UiFreeComponent(_In_ struct SUi* psUi, struct SBasicComponent* ps
 	return S_OK;
 }
 
+/*!
+ * This function is internally used to create a component
+ * @param psUi ui structure
+ * @param nId ID of the component
+ * @param psComp output where the specific component will be created
+ * @return S_OK for no error, E_NOTIMPL if the id is invalid or other errors
+ */
 static HRESULT UiCreateComponent(_In_ struct SUi* psUi, _In_ UINT nId, _Out_ struct SBasicComponent** psComp)
 {
 	UINT i = 0;
 	HRESULT hr = E_NOTIMPL;
 
-	for (; i < g_nMngrSize; i++)
+	for (; i < ARRAYSIZE(g_asMngr); i++)
 	{
 		if (g_asMngr[i].nId == nId)
 		{
@@ -167,6 +194,13 @@ HRESULT UiSwitchToDialog(_In_ struct SUi* psUi, _In_ UINT nId)
 	return hr;
 }
 
+/*!
+ * This function is internally used in the loop to skip handling of dialog window messages,
+ * as explained in the MSDN, a window loop should not translate and free messages allocated by
+ * dialog/dialog children
+ * @param psUi ui component
+ * @param pMsg the current message
+ */
 static BOOL UiCanHandleMsg(_In_ struct SUi* psUi, _In_ MSG* pMsg)
 {
 	HWND hCld;
@@ -199,6 +233,7 @@ INT UiLoop(_In_ struct SUi* psUi)
 		{
 			if (UiCanHandleMsg(psUi, &msg))
 			{
+				/* it's a window message, handle and free it */
 				TranslateMessage(&msg);
 				DispatchMessageW(&msg);
 			}

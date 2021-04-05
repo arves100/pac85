@@ -93,7 +93,7 @@ you need to modify Ui.c.
 
 DEFINE_UI declares the callbacks for letting Ui.c access the Ui functions, then
 ADD_UI must be called inside g_asMngr, g_asMngr is a global variable that specifies all
-the Ui that the application can use, make sure to modify g_nMngrSize as well.
+the Ui that the application can use.
 
 Do not add any component callbacks inside Ui, rather make a new file called "Ui_##name.c"
 

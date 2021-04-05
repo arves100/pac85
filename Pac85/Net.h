@@ -6,7 +6,7 @@
  */
 struct SNetCtx
 {
-	HWND hNotification; /* Handle to the window that will receive the notification messages */
+	HWND hNotification; /*! Handle to the window that will receive the notification messages */
 };
 
 /*!
@@ -14,10 +14,10 @@ struct SNetCtx
  */
 struct SNet
 {
-	HINTERNET hSession; /* handle the the http(s) session */
-	HINTERNET hConnection; /* handle to the connection to the server */
-	HINTERNET hRequest; /* handle to the network request */
-	struct SNetCtx sCtx; /* context */
+	HINTERNET hSession; /*! handle the the http(s) session */
+	HINTERNET hConnection; /*! handle to the connection to the server */
+	HINTERNET hRequest; /*! handle to the network request */
+	struct SNetCtx sCtx; /*! context */
 };
 
 /*!
