@@ -44,5 +44,6 @@
 #define WMNET_SSLERROR				(WM_USER + 0x09)
 #define WMNET_WRITTEN				(WM_USER + 0x0A)
 
+#define __VERSION__ "1.0.0.0"
 
 #endif /* PAC85_STDAFX_H */

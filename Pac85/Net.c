@@ -87,54 +87,54 @@ static VOID CALLBACK NetCallback(
 	_In_ DWORD dwStatusInformationLength
 )
 {
-	struct SNetCtx* psCtx = (struct SNetCtx*)dwContext;
+	struct SNet* psNet = (struct SNet*)dwContext;
 
 	UNREFERENCED_PARAMETER(hInternet);
 	
 	switch (dwInternetStatus)
 	{
 	case WINHTTP_CALLBACK_STATUS_CONNECTION_CLOSED:
-		SendMessageW(psCtx->hWindow, WMNET_DISCONNECTED, 0, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_DISCONNECTED, 0, 0);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_CONNECTED_TO_SERVER:
-		SendMessageW(psCtx->hWindow, WMNET_CONNECTED, (WPARAM)lpvStatusInformation, (LPARAM)dwStatusInformationLength);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_CONNECTED, (WPARAM)lpvStatusInformation, (LPARAM)dwStatusInformationLength);
 		break;
 
 	case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
-		SendMessageW(psCtx->hWindow, WMNET_CANREAD, (WPARAM)lpvStatusInformation, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_CANREAD, (WPARAM)lpvStatusInformation, 0);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
-		SendMessageW(psCtx->hWindow, WMNET_CANREADHEADERS, 0, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_CANREADHEADERS, 0, 0);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
-		SendMessageW(psCtx->hWindow, WMNET_READED, (WPARAM)lpvStatusInformation, (LPARAM)dwStatusInformationLength);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_READED, (WPARAM)lpvStatusInformation, (LPARAM)dwStatusInformationLength);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
-		SendMessageW(psCtx->hWindow, WMNET_ERROR, (WPARAM)lpvStatusInformation, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_ERROR, (WPARAM)lpvStatusInformation, 0);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_SECURE_FAILURE:
-		SendMessageW(psCtx->hWindow, WMNET_SSLERROR, (WPARAM)lpvStatusInformation, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_SSLERROR, (WPARAM)lpvStatusInformation, 0);
 		break;
 		
 	case WINHTTP_CALLBACK_STATUS_WRITE_COMPLETE:
-		SendMessageW(psCtx->hWindow, WMNET_WRITTEN, (WPARAM)lpvStatusInformation, 0);
+		SendMessageW(psNet->sCtx.hNotification, WMNET_WRITTEN, (WPARAM)lpvStatusInformation, 0);
 		break;
 	}
 }
 
-HRESULT NetStart(_In_ struct SNetCtx* psCtx, _Out_ struct SNet** psOut)
+HRESULT NetStart(_In_ struct SNetCtx sCtx, _Out_ struct SNet** psOut)
 {
 	struct SNet* psNet;
 
 	if (FAILED(UtlMalloc(sizeof(struct SNet), (LPVOID*)&psNet)))
 		return E_OUTOFMEMORY;
 	
-	psNet->hSession = WinHttpOpen(L"PAC85/1.0 (Windows "
+	psNet->hSession = WinHttpOpen(L"PAC85/" TEXT(__VERSION__) L" (Windows "
 #ifdef _WIN64
 		L"x86_64"
 #else
@@ -156,7 +156,9 @@ HRESULT NetStart(_In_ struct SNetCtx* psCtx, _Out_ struct SNet** psOut)
 		return E_FAIL;
 	}
 
-	if (!WinHttpSetOption(psNet->hSession, WINHTTP_OPTION_CONTEXT_VALUE, psCtx, sizeof(struct SNetCtx)))
+	psNet->sCtx = sCtx;
+
+	if (!WinHttpSetOption(psNet->hSession, WINHTTP_OPTION_CONTEXT_VALUE, psNet, sizeof(struct SNet)))
 	{
 		WinHttpCloseHandle(psNet->hSession);
 		UtlFree(psNet);
@@ -176,6 +178,8 @@ HRESULT NetStart(_In_ struct SNetCtx* psCtx, _Out_ struct SNet** psOut)
 		
 		WINHTTP_CALLBACK_STATUS_WRITE_COMPLETE
 	, 0);
+
+	*psOut = psNet;
 	
 	return S_OK;
 }
@@ -184,6 +188,12 @@ HRESULT NetFree(_In_ struct SNet* psNet)
 {
 	if (psNet)
 	{
+		if (psNet->hRequest)
+		{
+			WinHttpCloseHandle(psNet->hRequest);
+			psNet->hRequest = NULL;
+		}
+		
 		if (psNet->hConnection)
 		{
 			WinHttpCloseHandle(psNet->hConnection);
@@ -200,10 +210,36 @@ HRESULT NetFree(_In_ struct SNet* psNet)
 	return S_OK;
 }
 
-VOID XD(_In_ struct SNet* psNet, LPCWSTR szSrvName, BOOL bHttps)
+HRESULT NetConnect(_In_ struct SNet* psNet, _In_ LPCWSTR szSrvName, _In_ BOOL bHttps)
 {
 	psNet->hConnection = WinHttpConnect(psNet->hSession, szSrvName, bHttps ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT, 0);
+	return psNet->hConnection ? S_OK : E_FAIL;
+}
 
-	if (!psNet->hConnection)
+HRESULT NetOpenRequest(_In_ struct SNet* psNet, _In_ LPCWSTR szUrl, _In_ BOOL bPOST)
+{
+	psNet->hRequest = WinHttpOpenRequest(psNet->hConnection, bPOST ? L"POST" : L"GET", szUrl, NULL, WINHTTP_NO_REFERER,
+		WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
+	return psNet->hRequest ? S_OK : E_FAIL;
+}
+
+HRESULT NetSendRequest(_In_ struct SNet* psNet)
+{
+	return WinHttpSendRequest(psNet->hRequest, L"Connection: Close\r\n", 20, WINHTTP_NO_REQUEST_DATA, 0, 0, 0) ? S_OK : E_FAIL;
+}
+
+HRESULT NetRecvResponse(_In_ struct SNet* psNet)
+{
+	return WinHttpReceiveResponse(psNet->hRequest, NULL) ? S_OK : E_FAIL;
+}
+
+HRESULT NetQueryDataAvailable(_In_ struct SNet* psNet)
+{
+	return WinHttpQueryDataAvailable(psNet->hRequest, NULL) ? S_OK : E_FAIL;
+}
+
+HRESULT NetReadData(_In_ struct SNet* psNet, _In_ LPVOID lpBuffer, _In_ DWORD dwBufferLen)
+{
+	return WinHttpReadData(psNet->hRequest, lpBuffer, dwBufferLen, NULL) ? S_OK : E_FAIL;
 }
