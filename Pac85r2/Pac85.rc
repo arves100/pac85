@@ -1,0 +1,182 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Coreano (Corea del Sud) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Coreano (Corea del Sud) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Inglese (Stati Uniti) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DOWNLOAD DIALOGEX 0, 0, 227, 80
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_VISIBLE | WS_SYSMENU
+FONT 12, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "Downloading Arch Linux...",IDC_STATIC_DWN,17,17,85,8
+    LTEXT           "(file)",IDC_STATIC_FILE,17,27,16,8
+    PUSHBUTTON      "&Abort",IDABORT,72,50,78,14
+END
+
+IDD_WELCOME DIALOGEX 0, 0, 345, 215
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Welcome to Arch Linux"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Next >",IDOK,278,194,60,14
+    PUSHBUTTON      "Quit",IDCANCEL,198,194,62,14
+    LTEXT           "Welcome to the Arch Linux installer for Windows.",IDC_STATIC,157,18,161,12
+    CONTROL         "",IDC_BITMAP,"Static",SS_BLACKFRAME,15,17,129,187
+    LTEXT           "The following application will guide you to purify your bad system with a true blessed operative system that will free you from any control and allow you to reach the paradise.",IDC_STATIC,157,41,168,38
+    LTEXT           "This program is approved by our true saviour Pac85, please visit our simple, FOSS website about our religion:",IDC_STATIC,155,81,176,34
+    CONTROL         "<a>https://www.pac85.church/</a>",IDC_SYSLINK1,"SysLink",WS_TABSTOP,182,98,128,11
+    LTEXT           "Press Next to begin the installation.",IDC_STATIC,156,120,115,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DOWNLOAD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 220
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 73
+    END
+
+    IDD_WELCOME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 338
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 208
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DOWNLOAD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_WELCOME AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BACKGROUND          BITMAP                  "C:\\Users\\Arves100\\Desktop\\pac85bg.bmp"
+
+IDB_WAIFU               BITMAP                  "C:\\Users\\Arves100\\Desktop\\pacwaifu.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_OUT_OF_MEM          "Out of memory"
+    IDS_ERROR               "Error"
+    IDS_WINAPI_ERROR        "%s.\nWinAPI error: %s"
+    IDS_CANNOT_OPEN_FILE    "Cannot open file %s"
+    IDS_CANNOT_WRITE_ALL_DATA_TO_FILE 
+                            "Unable to write all data to file %s. Data written %lu/%lu"
+    IDS_CANNOT_OPEN_REQ     "Cannot open request to %s for file %s"
+    IDS_CANNOT_SEND_REQ     "Cannot send request to %s for file %s"
+    IDS_CANNOT_RECEIVE_RESP "Cannot receive response from %s for file %s"
+    IDS_CANNOT_QUERY_DATA   "Cannot query available data from %s for file %s"
+    IDS_CANNOT_READ_DATA    "Cannot read data from %s for file %s"
+    IDS_CANNOT_CONNECT      "Cannot connect to %s"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_CANNOT_CREATE_SESSION "Cannot create HTTP session"
+    IDS_CANNOT_GET_SAVE_PATH "Cannot get save path"
+END
+
+#endif    // Inglese (Stati Uniti) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
