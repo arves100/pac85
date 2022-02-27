@@ -124,6 +124,9 @@ static VOID CALLBACK NetCallback(
 	case WINHTTP_CALLBACK_STATUS_WRITE_COMPLETE:
 		SendMessageW(psNet->sCtx.hNotification, WMNET_WRITTEN, (WPARAM)lpvStatusInformation, 0);
 		break;
+
+	default:
+		break;
 	}
 }
 
